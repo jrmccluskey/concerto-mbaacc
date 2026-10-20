@@ -12,6 +12,9 @@ Other players can connect to your online versus host without Concerto as long as
 
 For best usage don't open CCCaster or MBAA.exe on their own while using this program.
 
+### Extended Training
+The **Extended Training** button in the Offline screen launches [MBAACC Extended Training Mode](https://github.com/fangdreth/MBAACC-Extended-Training-Mode) by fangdreth et al. alongside CCCaster's training mode. If `MBAACC-Extended-Training-Mode.exe` is not in the game folder, Concerto will ask for permission to download the latest numbered (non-nightly) release from GitHub and verify its checksum. Concerto closes the instance it launched when the training session ends; instances you start yourself are left alone.
+
 HIGHLY EXPERIMENTAL SOFTWARE, ENJOY AND EXPECT BUGS
 
 ### Install dependencies

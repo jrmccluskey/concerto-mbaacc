@@ -37,6 +37,9 @@ p2name.txt
 p1score.txt
 p2score.txt
 
+# MBAACC Extended Training Mode (downloaded on demand)
+MBAACC-Extended-Training-Mode.exe*
+
 # VSCode
 .vscode/
 

@@ -151,6 +151,14 @@ system_config.read_string(config_string)
 
 LOBBYURL = "https://concerto-mbaacc.shib.live/l"
 VERSIONURL = "https://concerto-mbaacc.shib.live/v"
+# MBAACC Extended Training Mode (https://github.com/fangdreth/MBAACC-Extended-Training-Mode)
+# Only numbered, non-prerelease releases are used; the bleeding-edge tag is a nightly build.
+# The standalone exe is used rather than the launcher because the launcher self-updates to bleeding-edge.
+ETM_RELEASES_API = "https://api.github.com/repos/fangdreth/MBAACC-Extended-Training-Mode/releases?per_page=100"
+ETM_EXE_NAME = "MBAACC-Extended-Training-Mode.exe"
+ETM_TAG_PATTERN = r"^v\d+(\.\d+)*$"
+# Image names indicating an instance of the mod is already running (stable exe, or the nightly launcher's child)
+ETM_PROCESS_NAMES = ("MBAACC-Extended-Training-Mode.exe", "Extended-Training-Mode.exe")
 CURRENT_VERSION = '1.04'
 DEBUG_VERSION = '1.05-rc' # set to '' if not in use. This string is printed to logging to track specific test builds.
 def find_img(file):

@@ -116,6 +116,9 @@
         "ES" : "ENTRENAMIENTO",
         "JA" : "トレーニング"
     },
+    "OFFLINE_MENU_EXTENDED_TRAINING" : {
+        "EN" : "EXTENDED TRAINING"
+    },
     "OFFLINE_MENU_REPLAYS" : {
         "EN" : "REPLAY THEATER"
     },
@@ -217,6 +220,9 @@
     },
     "TERM_CANCEL" : {
         "EN" : "Cancel"
+    },
+    "TERM_DOWNLOAD" : {
+        "EN" : "Download"
     },
     "TERM_SAVE" : {
         "EN" : "Save"
@@ -409,5 +415,23 @@
     },
     "TIP_TRIALS" : {
         "EN" : "Tip: Press F3 ingame to open Trial options."
+    },
+    "TIP_EXTENDED_TRAINING" : {
+        "EN" : "Extended Training Mode will attach once MBAA starts. Find EXTENDED SETTINGS in the training pause menu."
+    },
+    "ETM_DOWNLOAD_PROMPT" : {
+        "EN" : "Extended Training Mode is not installed.\nDownload the latest release from GitHub (fangdreth/MBAACC-Extended-Training-Mode)?\nThis third-party mod may be flagged by antivirus software."
+    },
+    "ETM_CHECKING" : {
+        "EN" : "Checking GitHub for the latest Extended Training Mode release..."
+    },
+    "ETM_DOWNLOADING" : {
+        "EN" : "Downloading Extended Training Mode %s...\n%s / %s bytes (%s%%)"
+    },
+    "ETM_DOWNLOAD_FAIL" : {
+        "EN" : "Failed to download Extended Training Mode: %s"
+    },
+    "ETM_LAUNCH_FAIL" : {
+        "EN" : "Could not start Extended Training Mode: %s"
     }
 }

@@ -70,6 +70,9 @@ MOON = {
     2 : 'H'
 }
 
+# Offline modes (lowercased app.offline_mode) that only show P1 in Discord presence
+SINGLE_PLAYER_MODES = ('training', 'extended training', 'replay theater')
+
 #error messages
 error_strings = [
     'Internal error!',
@@ -232,6 +235,19 @@ def increment_score_file(player_num: int):
         file.write(str(score))
         file.close()
 
+# Returns True if a process with the given image name is running.
+def is_process_running(image_name: str) -> bool:
+    cmd = f"""tasklist /FI "IMAGENAME eq {image_name}" /FO CSV /NH"""
+    try:
+        task_data = subprocess.check_output(cmd, shell=True, creationflags=subprocess.CREATE_NO_WINDOW, stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL).decode("UTF8","ignore")
+    except subprocess.CalledProcessError:
+        return False
+    try:
+        task_data.replace("\"", "").split(",")[1]
+    except IndexError:
+        return False
+    return True
+
 class Caster():
 
     def __init__(self, CApp):
@@ -247,6 +263,7 @@ class Caster():
         self.startup = False #True when waiting for MBAA.exe to start in offline
         self.stats = {} #dict of information we can read from memory
         self.pid = None #PID of MBAA.exe
+        self.etm_proc = None #Popen of Extended Training Mode, only set when launched by Concerto
 
     def validate_read(self, con):
         if "rollback:" in con or "rolback:" in con:
@@ -581,6 +598,29 @@ class Caster():
 
     def training(self,sc):
         self.kill_caster()
+        self._start_offline_option(sc, '1', 'Training')
+
+    def extended_training(self,sc):
+        # Launches MBAACC Extended Training Mode, then starts training mode identically to training().
+        self.kill_caster() # also terminates any Extended Training Mode instance we previously launched
+        if any(is_process_running(n) for n in ETM_PROCESS_NAMES):
+            # Started by hand: do not launch a second instance and do not take ownership of it.
+            logging.info('Concerto: Extended Training Mode already running, not launching')
+        else:
+            try:
+                self.etm_proc = subprocess.Popen([PATH + ETM_EXE_NAME], cwd=PATH,
+                                                 creationflags=subprocess.CREATE_NEW_CONSOLE)
+            except OSError as e:
+                logging.warning('Concerto: failed to launch Extended Training Mode: %s' % e)
+                sc.error_message(localize("ETM_LAUNCH_FAIL", str(e)))
+                return None
+            logger.write('\n== Extended Training Mode launched (PID %s) ==\n' % self.etm_proc.pid)
+        self._start_offline_option(sc, '1', 'Extended Training')
+        if self.aproc is None: # CCCaster failed to spawn; don't leave the mod running
+            self.kill_caster()
+
+    def _start_offline_option(self,sc,key,label):
+        # Spawns CCCaster, selects Offline, then selects the given offline menu key.
         self.startup = True
         try:
             proc = PtyProcess.spawn(app_config['settings']['caster_exe'].strip())
@@ -588,12 +628,12 @@ class Caster():
             sc.error_message('%s not found.' % app_config['settings']['caster_exe'].strip())
             return None
         self.aproc = proc
-        logger.write('\n== Training ==\n')
+        logger.write('\n== %s ==\n' % label)
         while self.aproc.isalive():
             con = self.aproc.read()
             logger.write('\n%s\n' % con.split())
             if self.find_button(con.split(),'Offline',self.aproc) or self.find_button(con.split(),'Ofline',self.aproc):
-                self.aproc.write('1')
+                self.aproc.write(key)
                 self.flag_offline(sc)
                 break
             else:
@@ -844,7 +884,7 @@ class Caster():
                         else:
                             if self.app.mode.lower() == 'public lobby':
                                 if self.app.offline_mode != None:
-                                    if self.app.offline_mode.lower() == 'training' or self.app.offline_mode.lower() == 'replay theater':
+                                    if self.app.offline_mode.lower() in SINGLE_PLAYER_MODES:
                                         presence.single_game(self.app.offline_mode, p1_char, self.stats["p1char"], self.stats["p1moon"],lobby_id=self.app.LobbyScreen.code)
                                     else:
                                         presence.offline_game(self.app.offline_mode, p1_char, self.stats["p1char"], p2_char, self.stats["p2char"],lobby_id=self.app.LobbyScreen.code)
@@ -855,7 +895,7 @@ class Caster():
                                         presence.public_lobby_game(self.app.LobbyScreen.code, self.app.LobbyScreen.opponent, char1_name=p1_char, char1_id=self.stats["p1char"], char2_name=p2_char, char2_id=self.stats["p2char"])     
                             else:
                                 if self.app.offline_mode != None:
-                                    if self.app.offline_mode.lower() == 'training' or self.app.offline_mode.lower() == 'replay theater':
+                                    if self.app.offline_mode.lower() in SINGLE_PLAYER_MODES:
                                         presence.single_game(self.app.offline_mode, p1_char, self.stats["p1char"], self.stats["p1moon"])
                                     else:
                                         presence.offline_game(self.app.offline_mode, p1_char, self.stats["p1char"], p2_char, self.stats["p2char"])
@@ -934,6 +974,18 @@ class Caster():
         #    del self.tproc
         self.tproc = None
 
+    def kill_extended_training(self):
+        # Terminates only the Extended Training Mode instance launched by Concerto (by PID).
+        # Instances started manually by the user are never touched.
+        if self.etm_proc is not None:
+            if self.etm_proc.poll() is None:
+                self.etm_proc.terminate()
+                try:
+                    self.etm_proc.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    logging.warning('Concerto: Extended Training Mode did not exit after terminate()')
+            self.etm_proc = None
+
     def kill_caster(self):
         self.adr = None
         self.rs = -1
@@ -943,6 +995,7 @@ class Caster():
             subprocess.run('taskkill /f /im %s' % app_config['settings']['caster_exe'].strip(), shell=True, creationflags=subprocess.CREATE_NO_WINDOW)
             killed = True
         self.aproc = None
+        self.kill_extended_training()
         self.startup = False
         self.offline = False
         self.broadcasting = False

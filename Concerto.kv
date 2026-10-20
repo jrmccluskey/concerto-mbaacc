@@ -529,15 +529,19 @@
                     on_release: 
                         root.training()
                 MenuBtn:
-                    text: '5. %s' % lang.localize("OFFLINE_MENU_REPLAYS")
+                    text: '5. %s' % lang.localize("OFFLINE_MENU_EXTENDED_TRAINING")
+                    on_release: 
+                        root.extended_training()
+                MenuBtn:
+                    text: '6. %s' % lang.localize("OFFLINE_MENU_REPLAYS")
                     on_release: 
                         root.replays()
                 MenuBtn:
-                    text: '6. %s' % lang.localize("OFFLINE_MENU_TRIALS")
+                    text: '7. %s' % lang.localize("OFFLINE_MENU_TRIALS")
                     on_release: 
                         root.trials()
                 MenuBtn:
-                    text: '7. %s' % lang.localize("OFFLINE_MENU_STANDALONE")
+                    text: '8. %s' % lang.localize("OFFLINE_MENU_STANDALONE")
                     on_release: 
                         root.standalone()
                 MenuBtn:
